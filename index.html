@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Smart QR — Hotel Payment & Review</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<style>
+:root{--ink:#182230;--muted:#667085;--line:#e4e9f0;--bg:#f4f6fa;--blue:#2457d6;--green:#16834b;--gold:#b7791f}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+.wrap{max-width:1040px;margin:auto;padding:20px}.top{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:18px}.brand{font-weight:850;font-size:23px;letter-spacing:-.6px}.pill{font-size:11px;font-weight:800;letter-spacing:.4px;border-radius:30px;padding:7px 11px;background:#fff2d9;color:#805300}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}.card{background:#fff;border:1px solid var(--line);border-radius:18px;padding:20px;box-shadow:0 6px 22px #1c2b3a08}
+h1{font-size:25px;margin:0 0 6px}h2{font-size:18px;margin:0 0 12px}.sub{font-size:14px;line-height:1.55;color:var(--muted);margin:0 0 14px}
+label{display:block;font-size:13px;font-weight:750;margin:12px 0 6px}input{width:100%;padding:12px;border:1px solid #d4dce7;border-radius:10px;font:inherit;font-size:14px;outline:none}input:focus{border-color:var(--blue);box-shadow:0 0 0 3px #2457d61a}
+button,.btn{border:0;border-radius:11px;padding:12px 15px;font:inherit;font-size:14px;font-weight:800;cursor:pointer;text-decoration:none;display:inline-flex;justify-content:center;align-items:center;gap:8px}
+.primary{background:var(--blue);color:#fff}.soft{background:#edf1f7;color:#253247}.green{background:var(--green);color:#fff}.actions{display:flex;gap:9px;flex-wrap:wrap;margin-top:16px}
+#qrcode{min-height:220px;display:flex;align-items:center;justify-content:center;padding:12px;border:1px dashed #cbd4e0;border-radius:14px;background:#fbfcfe}
+#qrcode img,#qrcode canvas{max-width:100%;height:auto!important}.status{min-height:20px;color:var(--green);font-size:13px;font-weight:700;margin:10px 0 0}
+.note{font-size:12px;color:var(--muted);line-height:1.55;margin:12px 0 0}.preview{max-width:440px;margin:0 auto;text-align:center}.hotel-mark{width:58px;height:58px;margin:0 auto 10px;border-radius:18px;background:#eaf0ff;color:var(--blue);display:grid;place-items:center;font-size:27px;font-weight:900}
+.preview h2{font-size:25px;margin:3px 0}.choices{display:grid;gap:12px;margin-top:20px}.choice{display:flex;align-items:center;gap:13px;text-align:left;border:1px solid var(--line);border-radius:14px;padding:15px;background:#fff;color:var(--ink);text-decoration:none;width:100%}
+.choice .ico{width:42px;height:42px;flex:0 0 42px;border-radius:12px;display:grid;place-items:center;background:#f0f4fa;font-size:23px}.choice b{display:block;font-size:15px}.choice small{display:block;color:var(--muted);font-size:12px;margin-top:3px}.payapps{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin-top:12px}
+.app{border:1px solid var(--line);border-radius:12px;background:#fff;padding:11px 5px;display:flex;flex-direction:column;align-items:center;gap:6px;color:var(--ink);font-size:12px;font-weight:800}
+.app span{font-size:22px}.sectionlabel{text-align:left;font-size:12px;color:var(--muted);font-weight:800;letter-spacing:.5px;margin:18px 0 0}
+.customer{margin-top:18px}.hidden{display:none!important}
+@media(max-width:760px){.wrap{padding:13px}.grid{grid-template-columns:1fr}.top{align-items:flex-start;flex-direction:column}.card{padding:16px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+ <header class="top"><div class="brand">✦ Smart QR</div><div class="pill">SINGLE QR · PAYMENT + GOOGLE REVIEW</div></header>
+
+ <main id="admin">
+  <div class="grid">
+   <section class="card">
+    <h1>Create a hotel's Smart QR</h1>
+    <p class="sub">One scan opens one hotel page. The customer can choose a UPI app or open the hotel's Google Review page.</p>
+    <label for="publicUrl">Published website address (required for a QR that works on other phones)</label>
+    <input id="publicUrl" placeholder="https://your-site.example/smartqr.html">
+    <p class="note">This file must first be uploaded to a public web host. A QR made from a file:// or local preview address will not work on customers' phones.</p>
+    <label for="hotel">Hotel / business name</label><input id="hotel" value="Hotel Royal">
+    <label for="upi">Verified UPI ID (VPA)</label><input id="upi" placeholder="hotelname@bank">
+    <label for="payee">Merchant name shown in UPI app</label><input id="payee" value="Hotel Royal">
+    <label for="amount">Bill amount in ₹ (optional)</label><input id="amount" type="number" min="1" step="0.01" placeholder="Leave blank if customer enters amount">
+    <label for="review">Google Review URL</label><input id="review" placeholder="Paste the hotel's Google review link">
+    <div class="actions"><button class="primary" id="generate">Generate ONE Smart QR</button><button class="soft" id="previewBtn">Preview customer page</button></div>
+    <p class="note">Use only the hotel's own verified UPI ID and review link. Test with a small amount before displaying the QR publicly.</p>
+   </section>
+   <section class="card">
+    <h2>Generated QR</h2>
+    <div id="qrcode"><span class="sub">Enter the published website address and hotel details, then generate.</span></div>
+    <div class="actions"><button class="soft" id="download">Download QR PNG</button><button class="soft" id="copy">Copy customer URL</button></div>
+    <p class="status" id="status" aria-live="polite"></p>
+    <p class="note">Print this single QR at the counter. Customers scan it using their phone camera, not the scanner inside a UPI app.</p>
+   </section>
+  </div>
+ </main>
+
+ <section id="customer" class="card customer hidden">
+  <div class="preview">
+   <div class="hotel-mark">₹</div>
+   <div class="pill">WELCOME</div>
+   <h2 id="customerHotel">Hotel Royal</h2>
+   <p class="sub">Thank you for visiting us. Choose what you'd like to do.</p>
+   <div class="choices">
+    <div class="choice" style="display:block">
+     <div style="display:flex;align-items:center;gap:12px;text-align:left">
+      <div class="ico">₹</div><div><b>Pay your bill</b><small>Select your preferred UPI app</small></div>
+     </div>
+     <div class="payapps">
+      <button class="app" id="gpay"><span>🟢</span>Google Pay</button>
+      <button class="app" id="phonepe"><span>🟣</span>PhonePe</button>
+      <button class="app" id="paytm"><span>🔵</span>Paytm</button>
+     </div>
+     <button class="btn soft" id="otherupi" style="width:100%;margin-top:9px">Other UPI app</button>
+     <p class="note" id="payHint">Your UPI app will show the merchant name and ask you to confirm payment.</p>
+    </div>
+    <a class="choice" id="reviewBtn" target="_blank" rel="noopener">
+     <span class="ico">⭐</span><span><b>Review our hotel</b><small>Share your experience on Google</small></span>
+    </a>
+   </div>
+   <p class="note">Never share your UPI PIN or OTP. Payment is completed only inside your UPI app after you verify the recipient and approve it.</p>
+  </div>
+ </section>
+</div>
+<script>
+const $=id=>document.getElementById(id);
+let latestUrl='';
+function cleanBase(s){return s.trim().replace(/#.*$/,'').replace(/\?.*$/,'')}
+function makePayload(){return {hotel:$('hotel').value.trim(),upi:$('upi').value.trim(),payee:$('payee').value.trim(),amount:$('amount').value.trim(),review:$('review').value.trim()}}
+function makeUpiUri(d){let p=new URLSearchParams({pa:d.upi,pn:d.payee||d.hotel,cu:'INR'});if(d.amount)p.set('am',d.amount);return 'upi://pay?'+p.toString()}
+function appIntent(d, pkg){
+ const query=new URLSearchParams({pa:d.upi,pn:d.payee||d.hotel,cu:'INR'});if(d.amount)query.set('am',d.amount);
+ return 'intent://pay?'+query.toString()+'#Intent;scheme=upi;package='+pkg+';end';
+}
+function renderCustomer(d){
+ $('admin').classList.add('hidden');$('customer').classList.remove('hidden');
+ $('customerHotel').textContent=d.hotel||'Our Hotel';
+ $('reviewBtn').href=d.review||'#';
+ $('reviewBtn').style.opacity=d.review?'1':'.45';
+ $('reviewBtn').onclick=e=>{if(!d.review){e.preventDefault();alert('The hotel has not added a Google Review link yet.')}};
+ $('payHint').textContent=d.upi?'UPI ID: '+d.upi+' · Check the merchant name before paying.':'Hotel payment details have not been configured.';
+ const launch=(url)=>{if(!d.upi){alert('Hotel payment details are not configured.');return}location.href=url};
+ $('gpay').onclick=()=>launch(appIntent(d,'com.google.android.apps.nbu.paisa.user'));
+ $('phonepe').onclick=()=>launch(appIntent(d,'com.phonepe.app'));
+ $('paytm').onclick=()=>launch(appIntent(d,'net.one97.paytm'));
+ $('otherupi').onclick=()=>launch(makeUpiUri(d));
+}
+function generate(){
+ const d=makePayload(),base=cleanBase($('publicUrl').value);
+ if(!base||!/^https?:\/\//i.test(base)){ $('status').textContent='Please enter the public HTTPS website address where this page will be hosted.';return}
+ if(!d.hotel||!d.upi||!d.review){$('status').textContent='Please enter hotel name, verified UPI ID and Google Review URL.';return}
+ if(!/^[\w.\-]{2,256}@[a-zA-Z0-9.\-]{2,64}$/.test(d.upi)){ $('status').textContent='Please check the UPI ID format (example: business@bank).';return}
+ const url=new URL(base);Object.entries(d).forEach(([k,v])=>url.searchParams.set(k,v));
+ latestUrl=url.toString();$('qrcode').innerHTML='';
+ if(!window.QRCode){$('qrcode').textContent='QR generator library could not load. Connect to internet and refresh.';return}
+ new QRCode($('qrcode'),{text:latestUrl,width:230,height:230,correctLevel:QRCode.CorrectLevel.M});
+ $('status').textContent='QR generated. It will work after this page is published at the address above.';
+}
+$('generate').onclick=generate;
+$('previewBtn').onclick=()=>{const d=makePayload();renderCustomer(d)};
+$('download').onclick=()=>{const c=$('qrcode').querySelector('canvas'),im=$('qrcode').querySelector('img'),src=c?c.toDataURL('image/png'):im?.src;if(!src){$('status').textContent='Generate the QR first.';return}const a=document.createElement('a');a.href=src;a.download='hotel-smart-qr.png';a.click()};
+$('copy').onclick=async()=>{if(!latestUrl){$('status').textContent='Generate the QR first.';return}try{await navigator.clipboard.writeText(latestUrl);$('status').textContent='Customer URL copied.'}catch(e){$('status').textContent='Copy is unavailable in this browser.'}};
+const params=new URLSearchParams(location.search);
+if(params.has('hotel')){renderCustomer({hotel:params.get('hotel'),upi:params.get('upi'),payee:params.get('payee'),amount:params.get('amount'),review:params.get('review')})}
+</script>
+</body>
+</html>
